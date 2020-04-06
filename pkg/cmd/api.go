@@ -60,9 +60,11 @@ func runCreateCmd(context *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	amount := context.Int("amount")
-	language := context.String("language")
-	return api.CreatePayment(Environment, amount, language, shouldOutputNextURL)
+	paymentFlags := api.CreatePaymentRequest{
+		Amount:   context.Int("amount"),
+		Language: context.String("language"),
+	}
+	return api.CreatePayment(Environment, paymentFlags, shouldOutputNextURL)
 }
 
 func Get() *cli.Command {
