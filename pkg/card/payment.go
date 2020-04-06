@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/cookiejar"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -12,23 +13,29 @@ import (
 	"github.com/alphagov/pay-cli/pkg/api"
 	"github.com/alphagov/pay-cli/pkg/config"
 	"github.com/briandowns/spinner"
+	"github.com/gorilla/schema"
 	"github.com/logrusorgru/aurora"
 	"golang.org/x/net/html"
 )
 
 type PostPaymentRequest struct {
-	PaymentID       string
-	CardNumber      string
-	CardExpiryMonth string
-	CardExpiryYear  string
-	CardCVC         string
-	CardHolderName  string
-	AddressLineOne  string
-	AddressCity     string
-	AddressCountry  string
-	AddressPostCode string
-	Email           string
-	CSRF            string
+	PaymentID       string `schema:"chargeId"`
+	CardNumber      string `schema:"cardNo"`
+	CardExpiryMonth string `schema:"expiryMonth"`
+	CardExpiryYear  string `schema:"expiryYear"`
+	CardCVC         string `schema:"cvc"`
+	CardHolderName  string `schema:"cardholderName"`
+	AddressLineOne  string `schema:"addressLine1"`
+	AddressCity     string `schema:"addressCity"`
+	AddressCountry  string `schema:"addressCountry"`
+	AddressPostCode string `schema:"addressPostcode"`
+	Email           string `schema:"email"`
+	CSRF            string `schema:"csrfToken"`
+}
+
+type PostConfirmRequest struct {
+	PaymentID string `schema:"chargeId"`
+	CSRF      string `schema:"csrfToken"`
 }
 
 func MakeCardPayment(input string, environment config.Environment) error {
@@ -205,14 +212,13 @@ func (process *CardPaymentProcess) postCardDetails(client http.Client) error {
 		Email:           "pay@cli.gov.uk",
 	}
 
-	req, err := http.NewRequest("POST", url, strings.NewReader(postPaymentRequest.format()))
+	err, form := postPaymentRequest.format()
 	if err != nil {
 		return err
 	}
-	req.Header.Add("content-type", "application/x-www-form-urlencoded")
 
 	s := StartProgress("Submitting card details")
-	res, err := client.Do(req)
+	res, err := client.PostForm(url, form)
 	if err != nil {
 		ProgressFail(s)
 		return err
@@ -237,15 +243,18 @@ func (process *CardPaymentProcess) postConfirm(client http.Client) error {
 		},
 	}
 	url := fmt.Sprintf("https://www.%s/card_details/%s/confirm", process.Environment.BaseURL, process.PaymentID)
-	body := fmt.Sprintf("csrfToken=%s&chargeId=%s", process.CSRF, process.PaymentID)
-	req, err := http.NewRequest("POST", url, strings.NewReader(body))
+
+	postConfirmRequest := PostConfirmRequest{
+		PaymentID: process.PaymentID,
+		CSRF:      process.CSRF,
+	}
+	err, form := postConfirmRequest.format()
 	if err != nil {
 		return err
 	}
-	req.Header.Add("content-type", "application/x-www-form-urlencoded")
 
 	s := StartProgress("Submitting confirm payment")
-	res, err := redirectClient.Do(req)
+	res, err := redirectClient.PostForm(url, form)
 	if err != nil {
 		ProgressFail(s)
 		return err
@@ -269,22 +278,18 @@ func ParsePaymentIDFromCardDetailsPage(document *html.Node) (string, error) {
 	return strings.Split(actionPath, "/")[2], nil
 }
 
-func (request *PostPaymentRequest) format() string {
-	return fmt.Sprintf(
-		"chargeId=%s&csrfToken=%s&cardNo=%s&expiryMonth=%s&expiryYear=%s&cardholderName=%s&cvc=%s&addressLine1=%s&addressCity=%s&addressCountry=%s&addressPostcode=%s&email=%s",
-		request.PaymentID,
-		request.CSRF,
-		request.CardNumber,
-		request.CardExpiryMonth,
-		request.CardExpiryYear,
-		request.CardHolderName,
-		request.CardCVC,
-		request.AddressLineOne,
-		request.AddressCity,
-		request.AddressCountry,
-		request.AddressPostCode,
-		request.Email,
-	)
+func (postPaymentRequest *PostPaymentRequest) format() (error, url.Values) {
+	encoder := schema.NewEncoder()
+	form := url.Values{}
+	err := encoder.Encode(postPaymentRequest, form)
+	return err, form
+}
+
+func (postConfirmRequest *PostConfirmRequest) format() (error, url.Values) {
+	encoder := schema.NewEncoder()
+	form := url.Values{}
+	err := encoder.Encode(postConfirmRequest, form)
+	return err, form
 }
 
 // @TODO(sfount) move to utility

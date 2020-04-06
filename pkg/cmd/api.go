@@ -39,6 +39,12 @@ func Create() *cli.Command {
 					Aliases: []string{"a"},
 					Usage:   "Amount for payment in pence",
 				},
+				&cli.StringFlag{
+					Name:    "language",
+					Aliases: []string{"l"},
+					Value:   "en",
+					Usage:   "Language of the payment",
+				},
 			},
 			GlobalFlags...,
 		),
@@ -55,7 +61,8 @@ func runCreateCmd(context *cli.Context) error {
 		return err
 	}
 	amount := context.Int("amount")
-	return api.CreatePayment(Environment, amount, shouldOutputNextURL)
+	language := context.String("language")
+	return api.CreatePayment(Environment, amount, language, shouldOutputNextURL)
 }
 
 func Get() *cli.Command {

@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/briandowns/spinner v1.10.0
 	github.com/google/uuid v1.1.1
+	github.com/gorilla/schema v1.1.0
 	github.com/logrusorgru/aurora v0.0.0-20200102142835-e9ef32dff381
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4
 	github.com/spf13/viper v1.6.2

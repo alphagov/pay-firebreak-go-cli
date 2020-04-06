@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 )
 
 type RefundPaymentRequest struct {
-	Amount int
+	Amount int `json:"amount"`
 }
 
 func RefundPayment(id string, amount int, environment config.Environment) error {
@@ -47,8 +48,6 @@ func RefundPayment(id string, amount int, environment config.Environment) error 
 }
 
 func (refundRequest *RefundPaymentRequest) format() string {
-	return fmt.Sprintf(
-		"{\n\t\"amount\": %d\n}",
-		refundRequest.Amount,
-	)
+	result, _ := json.Marshal(refundRequest)
+	return string(result)
 }

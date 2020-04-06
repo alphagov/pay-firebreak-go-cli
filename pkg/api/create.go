@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -11,13 +12,14 @@ import (
 )
 
 type CreatePaymentRequest struct {
-	Amount      int
-	Reference   string
-	Description string
-	ReturnURL   string
+	Amount      int    `json:"amount"`
+	Reference   string `json:"reference"`
+	Description string `json:"description"`
+	ReturnURL   string `json:"return_url"`
+	Language    string `json:"language"`
 }
 
-func CreatePayment(environment config.Environment, amount int, shouldOutputNextURL bool) error {
+func CreatePayment(environment config.Environment, amount int, language string, shouldOutputNextURL bool) error {
 	target := "v1/payments"
 	url := fmt.Sprintf("https://publicapi.%s/%s", environment.BaseURL, target)
 	paymentAmount := 2000
@@ -29,6 +31,7 @@ func CreatePayment(environment config.Environment, amount int, shouldOutputNextU
 		Reference:   uuid.New().String(),
 		Description: fmt.Sprintf("Pay CLI generated payment %s", time.Now().Format(time.Stamp)),
 		ReturnURL:   fmt.Sprintf("https://%s", environment.BaseURL),
+		Language:    language,
 	}
 	payload := strings.NewReader(request.format())
 	req, _ := http.NewRequest("POST", url, payload)
@@ -54,11 +57,6 @@ func CreatePayment(environment config.Environment, amount int, shouldOutputNextU
 }
 
 func (paymentRequest *CreatePaymentRequest) format() string {
-	return fmt.Sprintf(
-		"{\n\t\"amount\": %d,\n\t\"reference\": \"%s\",\n\t\"description\": \"%s\",\n\t\"return_url\": \"%s\"\n}",
-		paymentRequest.Amount,
-		paymentRequest.Reference,
-		paymentRequest.Description,
-		paymentRequest.ReturnURL,
-	)
+	result, _ := json.Marshal(paymentRequest)
+	return string(result)
 }
