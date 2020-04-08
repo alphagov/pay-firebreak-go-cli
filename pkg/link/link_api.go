@@ -11,9 +11,29 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 )
 
-const PRODUCTION_BASE_URL = "payments.service.gov.uk"
-const STAGING_BASE_URL = "staging.payments.service.gov.uk"
-const TEST_BASE_URL = "pymnt.uk"
+type environment struct{
+  name, baseUrl string
+}
+
+var ENVIRONMENTS = []environment {
+  environment{
+    name: "production",
+    baseUrl: "payments.service.gov.uk",
+  },
+  environment{
+    name: "staging",
+    baseUrl: "staging.payments.service.gov.uk",
+  },
+  environment{
+    name: "test",
+    baseUrl: "pymnts.uk",
+  },
+  environment{
+    name: "custom",
+    baseUrl: "",
+  },
+}
+
 const PAY_API_KEY_LENGTH = 58
 
 // ConfigureAPI links the CLI to the users GOV.UK Pay API configuration
@@ -57,20 +77,20 @@ func getConfigureAPIKey() (string, error) {
 }
 
 func getConfigureBaseURL() (string, error) {
-	reader := bufio.NewReader(os.Stdin)
-  fmt.Printf(
-  `Which base url should be used? Enter a number:
-  1. production
-  2. staging
-  3. test
-  4. custom`)
-  fmt.Printf("\n")
+  fmt.Printf("Choose the environment (enter a number between 0 and %d):\n", len(ENVIRONMENTS) - 1)
+  for index, environment := range ENVIRONMENTS {
+    fmt.Printf("%d %s\n", index, environment.name)
+  }
 
-	userSelection, err := reader.ReadString('\n')
+  var userSelection int
+	_, err := fmt.Scanf("%d", &userSelection)
+  if err != nil {
+    return "", err
+  }
 
-	if err != nil {
-		return "", err
-	}
+  if userSelection >= len(ENVIRONMENTS) {
+    return "", errors.New("Invalid environment selection")
+  }
 
   baseURL, err := parseUserBaseURLSelection(userSelection)
   if err != nil {
@@ -80,20 +100,12 @@ func getConfigureBaseURL() (string, error) {
 	return baseURL, nil
 }
 
-func parseUserBaseURLSelection(option string) (string, error) {
-  option = strings.TrimSpace(option)
-  switch option {
-  case "1":
-    return PRODUCTION_BASE_URL, nil
-  case "2":
-    return STAGING_BASE_URL, nil
-  case "3":
-    return TEST_BASE_URL, nil
-  case "4":
-    return getCustomBaseURL()
-  default:
-    return getCustomBaseURL()
+func parseUserBaseURLSelection(option int) (string, error) {
+  environment := ENVIRONMENTS[option]
+  if environment.name == "custom" {
+    return  getCustomBaseURL()
   }
+  return environment.baseUrl, nil
 }
 
 func getCustomBaseURL() (string, error) {
