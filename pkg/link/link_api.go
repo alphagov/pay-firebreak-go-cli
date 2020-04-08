@@ -23,7 +23,7 @@ func ConfigureAPI(environment config.Environment) error {
 	if err != nil {
 		return err
 	}
-	baseURL, _ := getConfigureBaseURL()
+	baseURL, err := getConfigureBaseURL()
 	if err != nil {
 		return err
 	}
