@@ -27,6 +27,7 @@ func Execute() {
 		API(),
 		Card(),
 		Toolbox(),
+		CI(),
 	}
 
 	if err := pay.Run(os.Args); err != nil {
