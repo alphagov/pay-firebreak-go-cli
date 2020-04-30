@@ -17,6 +17,29 @@ const ORGANISATION = "alphagov"
 const JENKINS_CONTEXT = "continuous-integration/jenkins/pr-head"
 const CONCOURSE_CONTEXT = "concourse-ci/status"
 
+var PUBLIC_REPOS = []string{
+	"pay-adminusers",
+	"pay-cardid",
+	"pay-cli",
+	"pay-connector",
+	"pay-direct-debit-connector",
+	"pay-direct-debit-frontend",
+	"pay-frontend",
+	"pay-java-commons",
+	"pay-js-commons",
+	"pay-ledger",
+	"pay-notifications",
+	"pay-omnibus",
+	"pay-product-page",
+	"pay-products",
+	"pay-products-ui",
+	"pay-publicapi",
+	"pay-publicauth",
+	"pay-selfservice",
+	"pay-toolbox"}
+
+var PRIVATE_REPOS = []string{"pay-endtoend"}
+
 var githubClient *github.Client
 
 type PrResult struct {
@@ -45,11 +68,7 @@ func CompareWithJenkins(repoOption string, numberOfPrs int) error {
 
 func parseRepoOption(repoOption string) ([]string, error) {
 	if repoOption == "all" {
-		repos, err := getPayRepos()
-		if err != nil {
-			return nil, err
-		}
-		return repos, nil
+		return getPayRepos(), nil
 	} else {
 		return []string{repoOption}, nil
 	}
@@ -204,29 +223,12 @@ func getStatusesForPr(pr github.PullRequest) ([]*github.RepoStatus, error) {
 	return statuses, nil
 }
 
-func getPayRepos() ([]string, error) {
+func getPayRepos() []string {
 	// could get these by calling github but the module only takes an org
 	// and there a lot of non-pay repos to retreive before we could filter them.
 	// Revisit if necessary.
-	return []string{
-		"pay-adminusers",
-		"pay-cardid",
-		"pay-cli",
-		"pay-connector",
-		"pay-direct-debit-connector",
-		"pay-direct-debit-frontend",
-		"pay-endtoend",
-		"pay-frontend",
-		"pay-java-commons",
-		"pay-js-commons",
-		"pay-ledger",
-		"pay-notifications",
-		"pay-omnibus",
-		"pay-product-page",
-		"pay-products",
-		"pay-products-ui",
-		"pay-publicapi",
-		"pay-publicauth",
-		"pay-selfservice",
-		"pay-toolbox"}, nil
+	if os.Getenv("PAY_CLI_GITHUB_ACCESS_TOKEN") != "" {
+		return append(PUBLIC_REPOS, PRIVATE_REPOS...)
+	}
+	return PUBLIC_REPOS
 }
