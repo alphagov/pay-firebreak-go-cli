@@ -23,11 +23,12 @@ func Execute() {
 	pay.Before = SetGlobalFlags
 
 	pay.Commands = []*cli.Command{
-		Link(),
 		API(),
 		Card(),
-		Toolbox(),
 		CI(),
+		Deployer(),
+		Link(),
+		Toolbox(),
 	}
 
 	if err := pay.Run(os.Args); err != nil {
