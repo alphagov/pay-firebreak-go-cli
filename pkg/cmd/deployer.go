@@ -119,13 +119,13 @@ func runDeployerCmd(c *cli.Context) error {
 
 	groupErr := verifyIAMGroup(svcIAM, targetProfile, "Admins")
 	if groupErr != nil {
-		log.Errorf("Error", groupErr)
+		log.Errorf("Error: %s", groupErr)
 		return groupErr
 	}
 
 	currentKeys, getKeysErr := getCurrentAccessKeys(svcIAM)
 	if getKeysErr != nil {
-		log.Errorf("Error", getKeysErr)
+		log.Errorf("Error: %s", getKeysErr)
 		return getKeysErr
 	}
 
@@ -168,7 +168,7 @@ func runDeployerCmd(c *cli.Context) error {
 		// Create New Access Key...
 		newKey, newKeyErr := createNewAccessKey(svcIAM)
 		if newKeyErr != nil {
-			log.Errorf("Error", newKeyErr)
+			log.Errorf("Error: %s", newKeyErr)
 			return newKeyErr
 		}
 
@@ -194,7 +194,7 @@ func runDeployerCmd(c *cli.Context) error {
 		fmt.Printf("New State of IAM Keys for %s:\n", targetUser)
 		_, getKeysErr := getCurrentAccessKeys(svcIAM)
 		if getKeysErr != nil {
-			log.Errorf("Error", getKeysErr)
+			log.Errorf("Error: %s", getKeysErr)
 			return getKeysErr
 		}
 
