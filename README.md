@@ -1,6 +1,6 @@
 # pay-cli
 
-This project provides CLI for Pay developers to interact with GOV.UK Pay's API, CI/CD platform and internal tooling.
+⚠️ This project was a firebreak proof of concept. It has some useful scripts but is not maintained by the Pay team.
 
 ## Deployer Command
 This is a command help automate the rotation of the `ci.deployer` AWS API key and secret in each of our environments.
