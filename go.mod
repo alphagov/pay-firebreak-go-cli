@@ -8,7 +8,7 @@ require (
 	github.com/briandowns/spinner v1.10.0
 	github.com/go-openapi/strfmt v0.19.11 // indirect
 	github.com/google/go-github v17.0.0+incompatible
-	github.com/google/go-github/v31 v31.0.0
+	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.1.1
 	github.com/gorilla/schema v1.1.0
 	github.com/jedib0t/go-pretty v4.3.0+incompatible
@@ -21,7 +21,7 @@ require (
 	github.com/spf13/viper v1.6.2
 	github.com/tidwall/pretty v1.0.1
 	github.com/urfave/cli/v2 v2.2.0
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
+	golang.org/x/crypto v0.1.0
+	golang.org/x/net v0.1.0
 	golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be
 )
